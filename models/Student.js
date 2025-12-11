@@ -1,11 +1,21 @@
 const mongoose = require("mongoose");
 
 const studentSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  idNumber: { type: String, required: true },
+  phone: { type: String, required: true },
+
   course: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
-  feePaid: { type: Number, required: true },
-  registrationDate: { type: Date, default: Date.now } // Added for month/year filtering
+  feePaid: { type: Number, default: 0 },
+
+  regDate: {
+    day: Number,
+    month: Number,
+    year: Number
+  },
+
+  createdAt: { type: Date, default: Date.now }
 });
 
-// Export model (avoid overwrite errors)
 module.exports = mongoose.models.Student || mongoose.model("Student", studentSchema);
