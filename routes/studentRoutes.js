@@ -7,8 +7,8 @@ router.get("/", async (req, res) => {
   try {
     const { month, year } = req.query;
     let filter = {};
-    if(month) filter["regDate.month"] = Number(month);
-    if(year) filter["regDate.year"] = Number(year);
+    if (month) filter["regDate.month"] = Number(month);
+    if (year) filter["regDate.year"] = Number(year);
 
     const students = await Student.find(filter).populate("course");
     res.json(students);
@@ -20,12 +20,39 @@ router.get("/", async (req, res) => {
 // POST register student
 router.post("/", async (req, res) => {
   try {
-    const { firstName, lastName, idNumber, phone, course, feePaid, regDate } = req.body;
-    if(!firstName || !lastName || !idNumber || !phone || !course || !regDate?.day || !regDate?.month || !regDate?.year) {
+    const {
+      admissionNumber,
+      firstName,
+      lastName,
+      idNumber,
+      phone,
+      course,
+      feePaid,
+      regDate
+    } = req.body;
+
+    if (
+      !admissionNumber ||
+      !firstName ||
+      !lastName ||
+      !idNumber ||
+      !phone ||
+      !course ||
+      !regDate?.day ||
+      !regDate?.month ||
+      !regDate?.year
+    ) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
+    // check duplicate admission number
+    const existingStudent = await Student.findOne({ admissionNumber });
+    if (existingStudent) {
+      return res.status(400).json({ error: "Admission number already exists" });
+    }
+
     const student = new Student({
+      admissionNumber,
       firstName,
       lastName,
       idNumber,
@@ -45,7 +72,11 @@ router.post("/", async (req, res) => {
 // PUT update student
 router.put("/:id", async (req, res) => {
   try {
-    const student = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const student = await Student.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
     res.json(student);
   } catch (err) {
     res.status(500).json({ error: err.message });
